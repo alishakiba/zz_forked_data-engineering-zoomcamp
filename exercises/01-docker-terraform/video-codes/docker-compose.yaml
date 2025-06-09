@@ -1,0 +1,53 @@
+# docker-compose.yml
+version: '3.8' # Specifies the Compose file format version
+
+services:
+  # Define the PostgreSQL database service
+  db:
+    image: postgres:13 # Use the official PostgreSQL 13 image from Docker Hub
+    environment: # Set environment variables inside the container
+      POSTGRES_DB: ny_taxi_data # Database name
+      POSTGRES_USER: user_docker # Database user
+      POSTGRES_PASSWORD: 123 # Database password
+    ports:
+      - "5432:5432" # Map host port 5432 to container port 5432 (optional for internal network communication)
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Mount a named volume for persistent database data
+    networks:
+      - ingeston-network # Assign to a custom network
+
+  # Define your data ingestion application service
+  ingestor:
+    build:
+      context: . # Build the image for this service from the current directory (where Dockerfile is)
+      dockerfile: Dockerfile # Specify the Dockerfile name (optional, defaults to Dockerfile)
+    environment: # Set environment variables for the ingestor (alternative to command line args)
+      # These variables will be passed to your entrypoint.sh and then to ingest_data.py
+      PG_USER: user_docker
+      PG_PASSWORD: 123
+      PG_HOST: db # IMPORTANT: Use the service name 'db' as the hostname for the database
+      PG_PORT: 5432
+      PG_DB: ny_taxi_data
+      TABLE_NAME: yellow_taxi_data
+      URL: "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"# command: # You can override the CMD from Dockerfile here, or pass args to ENTRYPOINT
+    # As we use $@ in the entrypoint.sh, we do not need to separately pass them to the script
+    #   - --user=$(PG_USER)
+    #   - --password=$(PG_PASSWORD)
+    #   - --host=$(PG_HOST)
+    #   - --port=$(PG_PORT)
+    #   - --db=$(PG_DB)
+    #   - --table_name=$(TABLE_NAME)
+    #   - --url=$(URL)
+    depends_on: # Define dependencies - ingestor won't start until db service is healthy (optional)
+      - db
+    networks:
+      - ingeston-network # Assign to the same custom network as the db service
+
+# Define named volumes for persistent data
+volumes:
+  pgdata: # This volume will store PostgreSQL data
+
+# Define custom networks for inter-service communication
+networks:
+  ingeston-network: # Custom bridge network
+    driver: bridge # Specifies the network driver
