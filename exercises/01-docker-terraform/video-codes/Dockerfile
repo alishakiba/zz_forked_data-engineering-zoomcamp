@@ -29,8 +29,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # This includes your ingest_data.py script.
 COPY . .
 
-# Define the default command to execute when the container starts.
-# CMD is an array of strings representing the executable and its arguments.
-# This makes the container "executable". It will run your Python script.
-# We're providing placeholders for arguments here; actual values will be passed at runtime.
-CMD ["python", "ingest_data.py", "--user", "root", "--password", "root", "--host", "localhost", "--port", "5432", "--db", "postgres", "--table_name", "yellow_taxi_data", "--url", "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"]
+# Define the entrypoint of the container.
+# This makes 'python ingest_data.py' the fixed command that will always run.
+ENTRYPOINT ["python", "pipeline.py"]
+
+# CMD provides default arguments to the ENTRYPOINT.
+# These will be used if no arguments are passed during 'docker run'.
+CMD ["--user", "root", "--password", "root", "--host", "localhost", "--port", "5432", "--db", "postgres", "--table_name", "yellow_taxi_data", "--url", "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"]
