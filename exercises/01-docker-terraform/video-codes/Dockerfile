@@ -26,12 +26,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire current directory (where Dockerfile is located) into the container's WORKDIR (/app).
-# This includes your ingest_data.py script.
-COPY . .
+COPY entrypoint.sh .
+COPY pipeline.py .
+
+RUN chmod +x /app/entrypoint.sh
 
 # Define the entrypoint of the container.
 # This makes 'python ingest_data.py' the fixed command that will always run.
-ENTRYPOINT ["python", "pipeline.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # CMD provides default arguments to the ENTRYPOINT.
 # These will be used if no arguments are passed during 'docker run'.
