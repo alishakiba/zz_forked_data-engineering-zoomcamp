@@ -29,15 +29,26 @@ services:
       PG_PORT: 5432
       PG_DB: ny_taxi_data
       TABLE_NAME: yellow_taxi_data
-      URL: "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"# command: # You can override the CMD from Dockerfile here, or pass args to ENTRYPOINT
+      URL: "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
+    command: # You can override the CMD from Dockerfile here, or pass args to ENTRYPOINT
+      - --user=user_docker
+      - --password=123
+      - --host=db
+      - --port=5432
+      - --db=ny_taxi_data
+      - --table_name=yellow_taxi_data
+      - --url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz
     # As we use $@ in the entrypoint.sh, we do not need to separately pass them to the script
-    #   - --user=$(PG_USER)
-    #   - --password=$(PG_PASSWORD)
-    #   - --host=$(PG_HOST)
-    #   - --port=$(PG_PORT)
-    #   - --db=$(PG_DB)
-    #   - --table_name=$(TABLE_NAME)
-    #   - --url=$(URL)
+    # command:
+    #   [
+    #     "--user","user_docker",
+    #     "--password","123",
+    #     "--host","localhost",
+    #     "--port","5432",
+    #     "--db","ny_taxi_data",
+    #     "--table_name","yellow_taxi_data",
+    #     "--url","https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz",
+    #   ]
     depends_on: # Define dependencies - ingestor won't start until db service is healthy (optional)
       - db
     networks:
